@@ -182,17 +182,17 @@ def init_auth_routes(app):
         c = conn.cursor()
         
         # Vulnerability: Race condition in transfer
-        c.execute(f"SELECT balance FROM users WHERE id={current_user['user_id']}")
+        c.execute("SELECT balance FROM users WHERE id=?", (current_user['user_id'],))
         balance = c.fetchone()[0]
         
         if balance >= amount:
             # Vulnerability: SQL injection possible in to_account
-            c.execute(f"UPDATE users SET balance = balance - {amount} WHERE id={current_user['user_id']}")
-            c.execute(f"UPDATE users SET balance = balance + {amount} WHERE account_number='{to_account}'")
+            c.execute("UPDATE users SET balance = balance - ? WHERE id=?", (amount, current_user['user_id']))
+            c.execute("UPDATE users SET balance = balance + ? WHERE account_number=?", (amount, to_account))
             conn.commit()
             
             # Vulnerability: Information disclosure
-            c.execute(f"SELECT username, balance FROM users WHERE account_number='{to_account}'")
+            c.execute("SELECT username, balance FROM users WHERE account_number=?", (to_account,))
             recipient = c.fetchone()
             
             conn.close()
