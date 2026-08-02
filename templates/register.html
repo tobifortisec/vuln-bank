@@ -92,8 +92,7 @@
                     const data = await response.json();
                     
                     if (data.status === 'success') {
-                        // Vulnerability: innerHTML used instead of textContent
-                        document.getElementById('message').innerHTML = data.message;
+                        document.getElementById('message').textContent = data.message;
                         document.getElementById('message').className = 'success';
                         
                         // Redirect to login after 2 seconds
@@ -101,11 +100,11 @@
                             window.location.href = '/login';
                         }, 2000);
                     } else {
-                        document.getElementById('message').innerHTML = data.message;
+                        document.getElementById('message').textContent = data.message;
                         document.getElementById('message').className = 'error';
                     }
                 } catch (error) {
-                    document.getElementById('message').innerHTML = 'Registration failed. Please try again.';
+                    document.getElementById('message').textContent = 'Registration failed. Please try again.';
                     document.getElementById('message').className = 'error';
                 }
             });
