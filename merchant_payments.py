@@ -205,13 +205,12 @@ def init_merchant_payment_routes(app):
             email = data.get('email')
             password = data.get('password')
 
-            # Vulnerability: SQL injection and plaintext password comparison
-            query = f"""
+            query = """
                 SELECT id, name, email, api_key, is_active, created_at
                 FROM merchants
-                WHERE email = '{email}' AND password = '{password}'
+                WHERE email = %s AND password = %s
             """
-            result = execute_query(query)
+            result = execute_query(query, (email, password))
 
             if not result:
                 return jsonify({
