@@ -476,18 +476,7 @@ def login():
         
     return render_template('login.html')
 
-@app.route('/debug/users')
-def debug_users():
-    users = execute_query("SELECT id, username, password, account_number, is_admin FROM users")
-    return jsonify({'users': [
-        {
-            'id': u[0],
-            'username': u[1],
-            'password': u[2],
-            'account_number': u[3],
-            'is_admin': u[4]
-        } for u in users
-    ]})
+
 
 @app.route('/dashboard')
 @token_required
