@@ -18,6 +18,7 @@ from database import (
     execute_transaction,
     check_database_connection,
 )
+import math
 from ai_agent_deepseek import ai_agent
 from transaction_graphql import transaction_graphql_schema
 from merchant_payments import init_merchant_payment_routes
@@ -545,10 +546,19 @@ def check_balance(account_number):
 def transfer(current_user):
     try:
         data = request.get_json()
-        # Vulnerability: No input validation on amount
-        # Vulnerability: Negative amounts allowed
         amount = float(data.get('amount'))
         to_account = data.get('to_account')
+
+        # A transfer must move a strictly positive amount from the sender to
+        # the recipient. Rejecting non-positive amounts (and NaN, since
+        # float('nan') <= 0 is False) here, before any DB access, prevents a
+        # signed amount from inverting the direction of the UPDATE statements
+        # below and minting funds for the sender.
+        if math.isnan(amount) or amount <= 0:
+            return jsonify({
+                'status': 'error',
+                'message': 'Transfer amount must be greater than zero'
+            }), 400
         
         # Get sender's account number
         # Race condition vulnerability in checking balance
@@ -560,7 +570,7 @@ def transfer(current_user):
         from_account = sender_data[0]
         balance = float(sender_data[1])
         
-        if balance >= abs(amount):  # Check against absolute value of amount
+        if balance >= amount:  # Sufficient balance for the exact transfer amount
             try:
                 # Vulnerability: Negative transfers possible
                 # Vulnerability: No transaction atomicity
