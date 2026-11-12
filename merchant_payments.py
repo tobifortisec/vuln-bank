@@ -58,12 +58,12 @@ def get_merchant_from_request():
     """
     api_key = request.headers.get('X-Merchant-Api-Key')
     if api_key:
-        query = f"""
+        query = """
             SELECT id, name, email, api_key, is_active, created_at
             FROM merchants
-            WHERE api_key = '{api_key}'
+            WHERE api_key = %s
         """
-        merchants = execute_query(query)
+        merchants = execute_query(query, (api_key,))
         if merchants:
             return merchant_tuple_to_dict(merchants[0]), 'api_key'
 
